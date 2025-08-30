@@ -1,13 +1,11 @@
 FROM rockylinux/rockylinux:10-minimal as with_deps
-
 # Dependencies needed at runtime
 RUN \
-	microdnf install -y libicu libcurl libmicrohttpd xapian-core libzstd && \
+	microdnf install -y libicu libcurl libmicrohttpd xapian-core-libs libzstd && \
 	microdnf clean all
 	
 
 FROM with_deps as build_area
-
 # Dependencies and tools needed to build
 RUN microdnf --enablerepo=crb install -y \
 	xz tar gzip \
@@ -17,9 +15,20 @@ RUN microdnf --enablerepo=crb install -y \
 	libicu-devel libcurl-devel libmicrohttpd-devel xapian-core-devel \
 	xz-devel libzstd-devel
 
+
 FROM build_area as builder
 ENV LD_LIBRARY_PATH=/usr/local/lib64
 ENV PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
+
+ARG GTEST_VERSION=1.17.0
+ARG GTEST_URL=https://github.com/google/googletest/releases/download/v${GTEST_VERSION}/googletest-${GTEST_VERSION}.tar.gz
+RUN \
+	curl --fail -L# "$GTEST_URL" | tar -xvz -C /usr/src/ && \
+	cd /usr/src/googletest-$GTEST_VERSION && \
+	cmake -B build && \
+	cd build && \
+	make && \
+	make install
 
 ARG PUGIXML_VERSION=1.15
 ARG PUGIXML_URL=https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-${PUGIXML_VERSION}.tar.gz
@@ -66,12 +75,14 @@ RUN \
 	ninja && \
 	ninja install
 
-FROM scratch as assembler
+
+FROM scratch as staging_area
 # This exists to prevent needing two copy layers in the run container
-COPY --from=builder /usr/local/lib64/ /lib64/
-COPY --from=builder /usr/local/bin/ /bin/
+COPY --exclude=usr/local/lib64/cmake --exclude=usr/local/lib64/pkgconfig --exclude=usr/local/lib64/libgmock* --exclude=usr/local/lib64/libgtest* --from=builder /usr/local/lib64/ /lib64/
+COPY --from=builder --exclude=usr/local/bin/kiwix-compile-* /usr/local/bin/ /bin/
+
 
 FROM with_deps as serve
-COPY --from=assembler / /usr/local/
+COPY --from=staging_area / /usr/local/
 ENV LD_LIBRARY_PATH=/usr/local/lib64
 ENV PATH=${PATH}:/usr/local/bin
