@@ -58,7 +58,6 @@ RUN \
 	
 ARG KIWIX_TOOLS_VERSION=3.7.0
 ARG KIWIX_TOOLS_URL=https://download.kiwix.org/release/kiwix-tools/kiwix-tools-${KIWIX_TOOLS_VERSION}.tar.xz
-
 RUN \
 	curl --fail -L# "$KIWIX_TOOLS_URL" | tar -xvJ -C /usr/src/ && \
 	cd /usr/src/kiwix-tools-"$KIWIX_TOOLS_VERSION" && \
