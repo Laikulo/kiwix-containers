@@ -1,0 +1,78 @@
+FROM rockylinux/rockylinux:10-minimal as with_deps
+
+# Dependencies needed at runtime
+RUN \
+	microdnf install -y libicu libcurl libmicrohttpd xapian-core libzstd && \
+	microdnf clean all
+	
+
+FROM with_deps as build_area
+
+# Dependencies and tools needed to build
+RUN microdnf --enablerepo=crb install -y \
+	xz tar gzip \
+	cmake \
+	gcc-c++ \
+	ninja-build meson \
+	libicu-devel libcurl-devel libmicrohttpd-devel xapian-core-devel \
+	xz-devel libzstd-devel
+
+FROM build_area as builder
+ENV LD_LIBRARY_PATH=/usr/local/lib64
+ENV PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
+
+ARG PUGIXML_VERSION=1.15
+ARG PUGIXML_URL=https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-${PUGIXML_VERSION}.tar.gz
+RUN \
+	curl --fail -L# "$PUGIXML_URL" | tar -xvz -C /usr/src/ && \
+	cd /usr/src/pugixml-$PUGIXML_VERSION && \
+	cmake -B build -D BUILD_SHARED_LIBS=y && \
+	cd build &&\
+	make && \
+	make install
+
+ARG MUSTACHE_VERSION=4.1
+ARG MUSTACHE_URL=https://github.com/kainjow/Mustache/archive/refs/tags/v${MUSTACHE_VERSION}.tar.gz
+RUN \
+	curl --fail -L# "$MUSTACHE_URL" | tar -xvz --strip-components=1 -C /usr/local/include Mustache-${MUSTACHE_VERSION}/mustache.hpp
+
+ARG LIBZIM_VERSION=9.3.0
+ARG LIBZIM_URL=https://download.openzim.org/release/libzim/libzim-${LIBZIM_VERSION}.tar.xz
+RUN \
+	curl --fail -L# "$LIBZIM_URL" | tar -xvJ -C /usr/src/ && \
+	cd /usr/src/libzim-${LIBZIM_VERSION} && \
+	meson setup build && \
+	cd build && \
+	ninja && \
+	ninja install
+
+ARG LIBKIWIX_VERSION=13.1.0
+ARG LIBKIWIX_URL=https://download.kiwix.org/release/libkiwix/libkiwix-${LIBKIWIX_VERSION}.tar.xz
+RUN \
+	curl --fail -L# "$LIBKIWIX_URL" | tar -xvJ -C /usr/src/ && \
+	cd /usr/src/libkiwix-"$LIBKIWIX_VERSION" && \
+	meson setup build && \
+	cd build && \
+	ninja && \
+	ninja install
+	
+ARG KIWIX_TOOLS_VERSION=3.7.0
+ARG KIWIX_TOOLS_URL=https://download.kiwix.org/release/kiwix-tools/kiwix-tools-${KIWIX_TOOLS_VERSION}.tar.xz
+
+RUN \
+	curl --fail -L# "$KIWIX_TOOLS_URL" | tar -xvJ -C /usr/src/ && \
+	cd /usr/src/kiwix-tools-"$KIWIX_TOOLS_VERSION" && \
+	meson setup build && \
+	cd build && \
+	ninja && \
+	ninja install
+
+FROM scratch as assembler
+# This exists to prevent needing two copy layers in the run container
+COPY --from=builder /usr/local/lib64/ /lib64/
+COPY --from=builder /usr/local/bin/ /bin/
+
+FROM with_deps as serve
+COPY --from=assembler / /usr/local/
+ENV LD_LIBRARY_PATH=/usr/local/lib64
+ENV PATH=${PATH}:/usr/local/bin
