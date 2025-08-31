@@ -14,7 +14,7 @@ main() {
 	elif [[ $KIWIX_ZIMS ]]; then
 		zims="$KIWIX_ZIMS"
 	else 
-		zims="/zims/*"
+		zims="/zims/*.zim"
 	fi
 
 	typeset -a kiwix_opts
