@@ -15,7 +15,7 @@ jobs:
   tools:
     uses: ./.github/workflows/docker-container.yml
     with:
-      components: tools
+      component: tools
     permissions:
       contents: read
       packages: write
@@ -23,7 +23,7 @@ jobs:
   serve:
     uses: ./.github/workflows/docker-container.yml
     with:
-      components: serve
+      component: serve
     needs:
       - tools
     permissions:
