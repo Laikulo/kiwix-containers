@@ -1,9 +1,9 @@
 #syntax=docker/dockerfile:1.7.0-labs
 
-FROM rockylinux/rockylinux:10-minimal as with_deps
+FROM rockylinux/rockylinux:9-minimal as with_deps
 # Dependencies needed at runtime
 RUN \
-	microdnf install -y libicu libcurl libmicrohttpd xapian-core-libs libzstd && \
+	microdnf install -y zlib libicu libcurl libmicrohttpd xapian-core-libs libzstd && \
 	microdnf clean all
 	
 
@@ -15,7 +15,7 @@ RUN microdnf --enablerepo=crb install -y \
 	gcc-c++ \
 	ninja-build meson \
 	libicu-devel libcurl-devel libmicrohttpd-devel xapian-core-devel \
-	xz-devel libzstd-devel
+	xz-devel libzstd-devel zlib-devel
 
 
 FROM build_area as builder
