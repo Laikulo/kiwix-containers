@@ -1,3 +1,5 @@
+#syntax=docker/dockerfile:1.7.0-labs
+
 FROM rockylinux/rockylinux:10-minimal as with_deps
 # Dependencies needed at runtime
 RUN \
