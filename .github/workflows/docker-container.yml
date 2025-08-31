@@ -14,6 +14,9 @@ on:
       upstream_digest:
         required: false
         type: string
+      build_args:
+        required: false
+        type: string
     outputs: 
       digest: 
         description: The digest of the built container
@@ -84,6 +87,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
+          build_args: ${{ fromJSON(inputs.build_arg) }}
           context: ${{ env.SUB_DIR }}
           file: ${{ env.SUB_DIR }}/Containerfile
           push: ${{ github.event_name != 'pull_request' }}

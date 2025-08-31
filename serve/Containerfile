@@ -1,4 +1,5 @@
-FROM ghcr.io/laikulo/kiwix-tools:latest
+ARG KIWX_TOOLS_VERSION=latest
+FROM ghcr.io/laikulo/kiwix-tools:${KIWX_TOOLS_VERSION}
 ADD --chmod=755 --chown=0:0 entrypoint /usr/local/bin/entrypoint
 RUN useradd -m kiwix -u 1000
 USER kiwix
