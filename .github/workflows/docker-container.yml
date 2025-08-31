@@ -9,7 +9,7 @@ on:
   workflow_call:
     inputs:
       component:
-        required: yes
+        required: true
         type: string
 
 env:
