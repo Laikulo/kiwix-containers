@@ -1,4 +1,4 @@
-name: Docker (kiwix-${{ inputs.component }})
+name: Docker Container Build
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -16,8 +16,8 @@ env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: laikulo/kiwix-${{inputs.component}}
-  SUB_DIR: ${{inputs.component}}
+  IMAGE_NAME: laikulo/kiwix-${{ inputs.component }}
+  SUB_DIR: ${{ inputs.component }}
 
 
 jobs:
