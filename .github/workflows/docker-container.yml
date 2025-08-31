@@ -11,10 +11,7 @@ on:
       component:
         required: true
         type: string
-      upstream_digest:
-        required: false
-        type: string
-      build_args:
+      build-args:
         required: false
         type: string
     outputs: 
@@ -87,7 +84,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
-          build_args: ${{ inputs.build_arg || '' }}
+          build-args: ${{ inputs.build-args || '' }}
           context: ${{ env.SUB_DIR }}
           file: ${{ env.SUB_DIR }}/Containerfile
           push: ${{ github.event_name != 'pull_request' }}

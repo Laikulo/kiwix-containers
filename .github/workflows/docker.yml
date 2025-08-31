@@ -24,7 +24,8 @@ jobs:
     uses: ./.github/workflows/docker-container.yml
     with:
       component: serve
-      upstream_digest: ${{ needs.tools.outputs.digest }}
+      build-args: |
+        KIWX_TOOLS_VERSION=latest@${{ needs.tools.outputs.digest }}
     needs:
       - tools
     permissions:
