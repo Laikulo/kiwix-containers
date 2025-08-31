@@ -25,7 +25,7 @@ jobs:
     with:
       component: serve
       build-args: |
-        KIWX_TOOLS_VERSION=latest@${{ needs.tools.outputs.digest }}
+        KIWIX_TOOLS_VERSION=latest@${{ needs.tools.outputs.digest }}
     needs:
       - tools
     permissions:
