@@ -14,5 +14,13 @@ on:
 jobs:
   tools:
     uses: ./.github/workflows/docker-tools.yml
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
   serve:
     uses: ./.github/workflows/docker-serve.yml
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
