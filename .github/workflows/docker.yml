@@ -13,13 +13,19 @@ on:
 
 jobs:
   tools:
-    uses: ./.github/workflows/docker-tools.yml
+    uses: ./.github/workflows/docker-container.yml
+    with:
+      components: tools
     permissions:
       contents: read
       packages: write
       id-token: write
   serve:
-    uses: ./.github/workflows/docker-serve.yml
+    uses: ./.github/workflows/docker-container.yml
+    with:
+      components: serve
+    needs:
+      - tools
     permissions:
       contents: read
       packages: write
