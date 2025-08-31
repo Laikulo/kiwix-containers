@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+shopt -s nullglob
+
+main() {
+	local listen_port listen_addr library_path zims
+	
+	listen_port="${KIWIX_PORT:-8080}"
+	listen_addr="${KIWIX_ADDR}"
+	if [[ $KIWIX_LIBRARY_PATH ]]; then
+		library_path="$KIWIX_LIBRARY_PATH"
+	elif [[ $KIWIX_ZIMS ]]; then
+		zims="$KIWIX_ZIMS"
+	else 
+		zims="/zims/*"
+	fi
+
+	typeset -a kiwix_opts
+	kiwix_opts=('-p' "$listen_port")
+
+	if [[ $listen_addr ]]; then
+		kiwix_opts+=('-i' "$listen_addr")
+	fi
+
+	# Intentional glob split
+	kiwix_opts+=($KIWIX_EXTRA_OPTS)
+
+	typeset -a kiwix_args
+
+	if [[ $library_path ]]; then
+		[[ -r "$library_path" ]] || die 2 "Library path $library_path not readable (or nonexistant)"
+		kiwix_args=('--library' '--monitorLibrary' "${kiwix_opts[@]}" "$library_path")
+	else 
+		# Intentional glob evaluation
+		typeset -a zim_files
+		zim_files=($zims)
+		[[ ${#zim_files[@]} -ge 1 ]] || die 2 "No matching ZIM files were found with pattern '$zims'"
+		kiwix_args=("${kiwix_opts[@]}")
+		kiwix_args+=("${zim_files[@]}")
+	fi
+
+	exec /usr/local/bin/kiwix-serve "${kiwix_args[@]}"
+
+}
+
+die() {
+	# ret, message
+	echo >&2 "FATAL: ${2:-No descrption provided}"
+	exit ${1:-1}
+}
+
+main "$@"
+exit $?

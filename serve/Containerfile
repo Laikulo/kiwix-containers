@@ -1,0 +1,7 @@
+FROM ghcr.io/laikulo/kiwix-tools:latest
+ADD --chmod=755 --chown=0:0 entrypoint /usr/local/bin/entrypoint
+RUN useradd -m kiwix -u 1000
+USER kiwix
+WORKDIR /home/kiwix
+EXPOSE 8080
+ENTRYPOINT [ "/usr/local/bin/entrypoint" ]
