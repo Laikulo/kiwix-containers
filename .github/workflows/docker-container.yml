@@ -11,6 +11,13 @@ on:
       component:
         required: true
         type: string
+      upstream_digest:
+        required: false
+        type: string
+    outputs: 
+      digest: 
+        description: The digest of the built container
+        value: ${{ jobs.build.outputs.digest }}
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -30,6 +37,10 @@ jobs:
       # This is used to complete the identity challenge
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
+
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+      digest: ${{ steps.build-and-push.outputs.digest }}
 
     steps:
       - name: Checkout repository
